@@ -1,0 +1,27 @@
+#The server is not allowed to make outgoing connections, except for the installation of security updates.
+ sudo iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+ sudo iptables -A OUTPUT -p tcp -d be.archive.ubuntu.com --dport 80 -j ACCEPT
+ sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+ sudo iptables -A INPUT -j DROP
+
+#Following services: Apache, ProFTPd
+ sudo iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+ sudo iptables -A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
+ sudo iptables -A INPUT -p tcp -m tcp --dport 21 -j ACCEPT
+
+#Service SSH: because i was working via ssh
+ sudo iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+
+#Following services: bind9. Please, do not allow zone transfers
+ sudo iptables -A INPUT -p tcp --dport 53 -j ACCEPT
+ sudo iptables -A INPUT -p udp --dport 53 -j DROP
+
+#Also protect the server against ping flooding
+ sudo iptables -t filter -A INPUT -p icmp --icmp-type echo-request -m limit --limit 5/minute -j ACCEPT
+ sudo iptables -t filter -A INPUT -p icmp -j DROP
+ sudo iptables -t filter -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+#Save the configuration
+ sudo service iptables save
+
+ 
